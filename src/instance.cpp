@@ -16,7 +16,9 @@ bool Instance::Initialize(char* path_to_exefile_)
     m_league_name = "Delve";
 
     curl_version_info_data* c_inf = curl_version_info(CURLVERSION_NOW);
-    if(strcmp(c_inf->libz_version, "1.2.8") != 0) /// Because i need to inflate gzipped html page
+
+    /// Because i need to inflate gzipped html page
+    if(strcmp(c_inf->libz_version, "1.2.8") != 0 || strcmp(c_inf->version, "7.62.0-DEV") != 0)
     {
         std::cout << "Bad curl.dll version." << std::endl;
         return false;
@@ -30,7 +32,7 @@ bool Instance::Initialize(char* path_to_exefile_)
 bool Instance::Run()
 {
     std::string PageCode = GetPage(m_base_url);
-    std::cout << PageCode << std::endl;
+    //std::cout << PageCode << std::endl;
 
     return true;
 }

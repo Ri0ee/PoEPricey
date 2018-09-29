@@ -16,7 +16,7 @@
 				</Compiler>
 			</Target>
 			<Target title="Release">
-				<Option output="bin/Release/PoEPricey" prefix_auto="1" extension_auto="1" />
+				<Option output="Release/PoEPricey" prefix_auto="1" extension_auto="1" />
 				<Option object_output="obj/Release/" />
 				<Option type="1" />
 				<Option compiler="gcc" />
@@ -34,8 +34,8 @@
 		</Compiler>
 		<Linker>
 			<Add library="lib/libcurl.lib" />
-			<Add library="lib/zlib.lib" />
 		</Linker>
+		<Unit filename="src/data_header.h" />
 		<Unit filename="src/instance.cpp" />
 		<Unit filename="src/instance.h" />
 		<Unit filename="src/main.cpp" />
