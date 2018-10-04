@@ -15,7 +15,6 @@
 				<Compiler>
 					<Add option="-std=c++11" />
 					<Add option="-g" />
-					<Add option="-lstdc++" />
 				</Compiler>
 			</Target>
 			<Target title="Release">
@@ -34,11 +33,31 @@
 		</Build>
 		<Compiler>
 			<Add option="-std=c++11" />
+			<Add directory="../PoEPricey" />
 		</Compiler>
 		<Linker>
+			<Add library="lib/libSDL2main.a" />
+			<Add library="lib/libSDL2.dll.a" />
+			<Add library="lib/libopengl32.a" />
 			<Add library="lib/libcurl.lib" />
 		</Linker>
+		<Unit filename="include/imgui/imconfig.h" />
+		<Unit filename="include/imgui/imgui.cpp" />
+		<Unit filename="include/imgui/imgui.h" />
+		<Unit filename="include/imgui/imgui_demo.cpp" />
+		<Unit filename="include/imgui/imgui_draw.cpp" />
+		<Unit filename="include/imgui/imgui_internal.h" />
+		<Unit filename="include/imgui/imgui_widgets.cpp" />
+		<Unit filename="include/imgui/imstb_rectpack.h" />
+		<Unit filename="include/imgui/imstb_textedit.h" />
+		<Unit filename="include/imgui/imstb_truetype.h" />
 		<Unit filename="src/data_header.h" />
+		<Unit filename="src/gui.cpp" />
+		<Unit filename="src/gui.h" />
+		<Unit filename="src/imgui_impl_opengl2.cpp" />
+		<Unit filename="src/imgui_impl_opengl2.h" />
+		<Unit filename="src/imgui_impl_sdl.cpp" />
+		<Unit filename="src/imgui_impl_sdl.h" />
 		<Unit filename="src/instance.cpp" />
 		<Unit filename="src/instance.h" />
 		<Unit filename="src/main.cpp" />

@@ -31,19 +31,33 @@ bool Instance::Initialize(char* path_to_exefile_)
 
 bool Instance::Run()
 {
-    auto get_itemprice_responce = GetItemPrice(true, EXALTED_ORB, CHAOS_ORB, 0);
-    if(!get_itemprice_responce.second)
+    m_gui_ptr = new Gui();
+    m_gui_ptr->Initialize();
+    while(!m_gui_ptr->IsFinished())
     {
-        std::cerr << "Failed to retrieve item price." << std::endl;
-        return false;
+        m_gui_ptr->Process();
+
+        if(m_gui_ptr->GetButtonState(GET_PRICE_BUTTON))
+        {
+            auto get_itemprice_responce = GetItemPrice(true, EXALTED_ORB, CHAOS_ORB, 0);
+            if(!get_itemprice_responce.second)
+            {
+                std::cerr << "Failed to retrieve item price." << std::endl;
+                return false;
+            }
+
+            std::vector<Item> ex_chaos_prices = get_itemprice_responce.first;
+
+            for(auto it = ex_chaos_prices.begin(); it != ex_chaos_prices.end(); it++)
+            {
+                std::cout << it->s_buy_price << std::endl;
+            }
+
+            m_gui_ptr->SwitchButtonState(GET_PRICE_BUTTON, false);
+        }
     }
 
-    std::vector<Item> ex_chaos_prices = get_itemprice_responce.first;
-
-    for(auto it = ex_chaos_prices.begin(); it != ex_chaos_prices.end(); it++)
-    {
-        std::cout << it->s_buy_price << std::endl;
-    }
+    m_gui_ptr->Shutdown();
 
     return true;
 }
@@ -129,11 +143,11 @@ std::pair<std::vector<Item>, bool> Instance::GetItemPrice(bool online_only_, int
             std::string data_block(block_start_occurrence_it, block_end_occurrence_it + 2);
             page_code.erase(page_code.begin(), block_end_occurrence_it);
 
-            auto acc_name_it = std::search(data_block.begin(), data_block.end(), data_username_code.begin(), data_username_code.end()) + data_username_code.size() + 1;
-            auto ign_it = std::search(data_block.begin(), data_block.end(), data_ign_code.begin(), data_ign_code.end()) + data_ign_code.size() + 1;
+            auto acc_name_it  = std::search(data_block.begin(), data_block.end(), data_username_code.begin(), data_username_code.end()) + data_username_code.size() + 1;
+            auto ign_it       = std::search(data_block.begin(), data_block.end(), data_ign_code.begin(), data_ign_code.end()) + data_ign_code.size() + 1;
             auto sellvalue_it = std::search(data_block.begin(), data_block.end(), data_sellvalue_code.begin(), data_sellvalue_code.end()) + data_sellvalue_code.size() + 1;
-            auto buyvalue_it = std::search(data_block.begin(), data_block.end(), data_buyvalue_code.begin(), data_buyvalue_code.end()) + data_buyvalue_code.size() + 1;
-            auto stock_it = std::search(data_block.begin(), data_block.end(), data_stock_code.begin(), data_stock_code.end()) + data_stock_code.size() + 1;
+            auto buyvalue_it  = std::search(data_block.begin(), data_block.end(), data_buyvalue_code.begin(), data_buyvalue_code.end()) + data_buyvalue_code.size() + 1;
+            auto stock_it     = std::search(data_block.begin(), data_block.end(), data_stock_code.begin(), data_stock_code.end()) + data_stock_code.size() + 1;
             if(stock_it - data_stock_code.size() - 1 == data_block.end())
                 is_stock_present = false;
 

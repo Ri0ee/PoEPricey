@@ -7,6 +7,7 @@
 #include <algorithm>
 
 #include "include/curl/curl.h"
+#include "gui.h"
 
 struct Item
 {
@@ -43,6 +44,7 @@ private:
     std::string m_league_name;
 
     CURL* m_curl_ptr = nullptr;
+    Gui* m_gui_ptr = nullptr;
 };
 
 class TradeURL
@@ -52,26 +54,25 @@ public:
         m_base_url(base_url_), m_league_name(league_name_), m_online(online_), m_want(want_), m_have(have_), m_stock(stock_) {}
     ~TradeURL() {}
 
-    void SetBaseURL(const std::string& base_url_) { m_base_url = base_url_; }
-    void SetLeagueName(const std::string& league_name_) { m_league_name = league_name_; }
-    void SetOnlineOnly(bool online_) { m_online = online_; }
-    void SetWantedItem(int want_) { m_want = want_; }
-    void SetPresentItem(int have_) { m_have = have_; }
-    void SetMinStock(int stock_) { m_stock = stock_; }
+    void SetBaseURL     (const std::string& base_url_)      { m_base_url = base_url_; }
+    void SetLeagueName  (const std::string& league_name_)   { m_league_name = league_name_; }
+    void SetOnlineOnly  (bool online_)                      { m_online = online_; }
+    void SetWantedItem  (int want_)                         { m_want = want_; }
+    void SetPresentItem (int have_)                         { m_have = have_; }
+    void SetMinStock    (int stock_)                        { m_stock = stock_; }
 
     void Compose()
     {
         m_composed_url.append(m_base_url);
         m_composed_url.append("search?");
-        m_composed_url.append("league=");  m_composed_url.append(m_league_name);
-        m_composed_url.append("&online="); m_composed_url.append(m_online?"x":"");
-        m_composed_url.append("&stock=");  m_composed_url.append(std::to_string(m_stock));
-        m_composed_url.append("&want=");   m_composed_url.append(std::to_string(m_want));
-        m_composed_url.append("&have=");   m_composed_url.append(std::to_string(m_have));
+        m_composed_url.append("league=");   m_composed_url.append(m_league_name);
+        m_composed_url.append("&online=");  m_composed_url.append(m_online?"x":"");
+        m_composed_url.append("&stock=");   m_composed_url.append(std::to_string(m_stock));
+        m_composed_url.append("&want=");    m_composed_url.append(std::to_string(m_want));
+        m_composed_url.append("&have=");    m_composed_url.append(std::to_string(m_have));
     }
 
     std::string Get() { return m_composed_url; }
-
 
 private:
     std::string m_league_name;
