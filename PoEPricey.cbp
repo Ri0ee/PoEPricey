@@ -33,9 +33,14 @@
 		</Build>
 		<Compiler>
 			<Add option="-std=c++11" />
+			<Add option="-m32" />
 			<Add directory="../PoEPricey" />
 		</Compiler>
 		<Linker>
+			<Add option="-static-libstdc++" />
+			<Add option="-static-libgcc" />
+			<Add option="-static" />
+			<Add option="-m32" />
 			<Add library="lib/libSDL2main.a" />
 			<Add library="lib/libSDL2.dll.a" />
 			<Add library="lib/libopengl32.a" />
@@ -61,6 +66,9 @@
 		<Unit filename="src/instance.cpp" />
 		<Unit filename="src/instance.h" />
 		<Unit filename="src/main.cpp" />
+		<Unit filename="src/struct.h" />
+		<Unit filename="src/util.cpp" />
+		<Unit filename="src/util.h" />
 		<Extensions>
 			<code_completion />
 			<envvars />

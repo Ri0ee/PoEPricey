@@ -1,5 +1,7 @@
 #pragma once
 
+#define CURRENCY_TYPE_COUNT 27
+
 /// CURRENCY
 #define ALTERATION_ORB 1
 #define FUSING_ORB     2

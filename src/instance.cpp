@@ -39,19 +39,19 @@ bool Instance::Run()
 
         if(m_gui_ptr->GetButtonState(GET_PRICE_BUTTON))
         {
-            auto get_itemprice_responce = GetItemPrice(true, EXALTED_ORB, CHAOS_ORB, 0);
+            int buy_c = m_gui_ptr->GetSelectedCurrencyToBuy();
+            int sell_c = m_gui_ptr->GetSelectedCurrencyToSell();
+
+            auto get_itemprice_responce = GetItemPrice(true, buy_c, sell_c, 0);
             if(!get_itemprice_responce.second)
             {
                 std::cerr << "Failed to retrieve item price." << std::endl;
                 return false;
             }
 
-            std::vector<Item> ex_chaos_prices = get_itemprice_responce.first;
+            std::vector<Item> prices = get_itemprice_responce.first;
 
-            for(auto it = ex_chaos_prices.begin(); it != ex_chaos_prices.end(); it++)
-            {
-                std::cout << it->s_buy_price << std::endl;
-            }
+            m_gui_ptr->PushPriceList(prices);
 
             m_gui_ptr->SwitchButtonState(GET_PRICE_BUTTON, false);
         }
