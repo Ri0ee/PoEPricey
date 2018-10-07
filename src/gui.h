@@ -30,8 +30,8 @@ public:
     }
 
     bool IsFinished() { return m_finsihed; }
-    int GetSelectedCurrencyToBuy() { return m_selected_currency_to_buy; }
-    int GetSelectedCurrencyToSell() { return m_selected_currency_to_sell; }
+    int GetSelectedCurrencyToBuy() { return m_selected_currency_to_buy + 1; }
+    int GetSelectedCurrencyToSell() { return m_selected_currency_to_sell + 1; }
 
     bool GetButtonState(int button_id_)
     {

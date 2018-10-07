@@ -44,14 +44,12 @@ bool Instance::Run()
 
             auto get_itemprice_responce = GetItemPrice(true, buy_c, sell_c, 0);
             if(!get_itemprice_responce.second)
-            {
                 std::cerr << "Failed to retrieve item price." << std::endl;
-                return false;
+            else
+            {
+                std::vector<Item> prices = get_itemprice_responce.first;
+                m_gui_ptr->PushPriceList(prices);
             }
-
-            std::vector<Item> prices = get_itemprice_responce.first;
-
-            m_gui_ptr->PushPriceList(prices);
 
             m_gui_ptr->SwitchButtonState(GET_PRICE_BUTTON, false);
         }

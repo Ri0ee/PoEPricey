@@ -117,18 +117,46 @@ void Gui::Process()
                 for(int j = 0; j < item_vector.size(); j++)
                 {
                     std::string item_text_buf;
-                    item_text_buf = item_text_buf + "Selling " + GetCurrencyName(item_vector[j].s_item_type, true) +
-                                                    "(" + std::to_string((int)item_vector[j].s_sell_price) + ") " +
-                                                    "for " + GetCurrencyName(item_vector[j].s_price_item_type, true) +
-                                                    "(" + std::to_string((int)item_vector[j].s_buy_price) + ") " +
-                                                    "Name: " + item_vector[j].s_seller_acc_name;
+                    item_text_buf = item_text_buf +
+                                    "Selling " + GetCurrencyName(item_vector[j].s_item_type, true) +
+                                    "(" + std::to_string((int)item_vector[j].s_sell_price) + ") " +
+                                    "for " + GetCurrencyName(item_vector[j].s_price_item_type, true) +
+                                    "(" + std::to_string((int)item_vector[j].s_buy_price) + ") " +
+                                    "Name: " + item_vector[j].s_seller_acc_name;
 
                     ImGui::PushItemWidth(350);
+
+                    ImGui::PushID(j);
                     ImGui::Text(item_text_buf.c_str());
 
-                    ImGui::Button("Buy");
-                    ImGui::SameLine(); ImGui::Button("Message");
-                    ImGui::SameLine(); ImGui::Button("Add to ignore list");
+                    if(ImGui::Button("Buy"))
+                    {
+                        std::string buy_message_buf("");
+                        buy_message_buf =   buy_message_buf +
+                                            "@" + item_vector[j].s_seller_acc_name +
+                                            " WTB your " + std::to_string((int)item_vector[j].s_sell_price) +
+                                            " " + GetCurrencyName(item_vector[j].s_item_type, false) +
+                                            " listed for " + std::to_string((int)item_vector[j].s_buy_price) +
+                                            " " + GetCurrencyName(item_vector[j].s_price_item_type, false);
+                        ImGui::SetClipboardText(buy_message_buf.c_str());
+                    }
+
+                    ImGui::SameLine();
+                    if(ImGui::Button("Message"))
+                    {
+                        std::string pm_message_buf("");
+                        pm_message_buf =    pm_message_buf +
+                                            "@" + item_vector[j].s_seller_acc_name + " ";
+
+                        ImGui::SetClipboardText(pm_message_buf.c_str());
+                    }
+
+                    ImGui::SameLine();
+                    if(ImGui::Button("Add to ignore list"))
+                    {
+
+                    }
+                    ImGui::PopID();
                 }
 
                 if(ImGui::Button("Close"))
