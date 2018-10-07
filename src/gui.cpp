@@ -6,82 +6,137 @@ bool Gui::Initialize()
     m_window_size = m_base_window_size;
     m_window_pos = ImVec2(100, 100);
     m_clear_color = ImVec4(0.f, 0.f, 0.f, 0.f);
+    m_max_price_results = 10;
+
+    m_show_options_window = false;
+    m_show_ignore_list_window = false;
+
+    m_selected_currency_to_buy = 0;
+    m_selected_currency_to_sell = 0;
+    m_selected_league = 0;
 
     m_basic_window_flags = ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoSavedSettings;
 
-    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER) != 0)
-    {
-        std::cerr << "Failed to init SDL2." << std::endl;
-        return false;
-    }
+    if (!glfwInit())
+        return 1;
 
-    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-    SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
-    SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
+    glfwWindowHint(GLFW_DECORATED, GL_FALSE);
 
-    SDL_GetCurrentDisplayMode(0, &m_display_mode);
-    m_window_ptr = SDL_CreateWindow("", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, m_base_window_size.x, m_base_window_size.y, SDL_WINDOW_OPENGL | SDL_WINDOW_BORDERLESS);
-    m_gl_context = SDL_GL_CreateContext(m_window_ptr);
-    SDL_GL_SetSwapInterval(1);
+    m_window_ptr = glfwCreateWindow(m_window_size.x, m_window_size.y, "", NULL, NULL);
+    if (m_window_ptr == NULL)
+        return 1;
+
+    glfwMakeContextCurrent(m_window_ptr);
+    glfwSwapInterval(1);
 
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     m_io = ImGui::GetIO();
 
-    ImGui_ImplSDL2_InitForOpenGL(m_window_ptr, m_gl_context);
+    ImGui_ImplGlfw_InitForOpenGL(m_window_ptr, true);
     ImGui_ImplOpenGL2_Init();
 
     ImGui::StyleColorsDark();
 
+    m_currency_items = {std::string("Alteration orb"), std::string("Fusing orb"), std::string("Alchemy orb"),
+                        std::string("Chaos orb"), std::string("Gemcutter's orb"), std::string("Exalted orb"),
+                        std::string("Chromatic orb"), std::string("Jeweller orb"), std::string("Chance orb"),
+                        std::string("Chisel orb"), std::string("Scouring orb"), std::string("Blessed orb"),
+                        std::string("Regret orb"), std::string("Regal orb"), std::string("Divine orb"),
+                        std::string("Vaal orb"), std::string("Scroll of wisdom"), std::string("Portal scroll"),
+                        std::string("Armourer's Scrap"), std::string("Blacksmith's whetstone"), std::string("Glassblowers bauble"),
+                        std::string("Transmutation orb"), std::string("Augumentation orb"), std::string("Mirror of Kalandra"),
+                        std::string("Eternal orb"), std::string("Perandus coin"), std::string("Silver coin")};
+
+    m_league_names = {std::string("Delve SC"), std::string("Delve HC"), std::string("Standard SC"), std::string("Standard HC")};
 
     m_button_states.resize(100);
 }
 
 void Gui::Shutdown()
 {
-    SDL_GL_DeleteContext(m_gl_context);
-    SDL_DestroyWindow(m_window_ptr);
-    SDL_Quit();
+    ImGui_ImplOpenGL2_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
+
+    glfwDestroyWindow(m_window_ptr);
+    glfwTerminate();
 }
 
 void Gui::Process()
 {
-    SDL_SetWindowPosition(m_window_ptr, m_window_pos.x, m_window_pos.y);
+    glfwSetWindowPos(m_window_ptr, m_window_pos.x, m_window_pos.y);
     UpdateWindowSize();
 
-    SDL_Event event;
-    while(SDL_PollEvent(&event))
-    {
-        ImGui_ImplSDL2_ProcessEvent(&event);
-        if (event.type == SDL_QUIT)
-            m_finsihed = true;
-    }
+    glfwPollEvents();
 
     ImGui_ImplOpenGL2_NewFrame();
-    ImGui_ImplSDL2_NewFrame(m_window_ptr);
+    ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
 
     {
         ImGui::SetNextWindowPos(ImVec2(0, 0));
         ImGui::SetNextWindowSize(m_base_window_size);
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
         ImGui::Begin("PoEPricey", 0, m_basic_window_flags);
 
-        const char* currency_item_list[] = {"Alteration orb", "Fusing orb", "Alchemy orb", "Chaos orb", "Gemcutter's orb",
-                                            "Exalted orb", "Chromatic orb", "Jeweller orb", "Chance orb", "Chisel orb",
-                                            "Scouring orb", "Blessed orb", "Regret orb", "Regal orb", "Divine orb",
-                                            "Vaal orb", "Scroll of wisdom", "Portal scroll", "Armourer's Scrap",
-                                            "Blacksmith's whetstone", "Glassblowers bauble", "Transmutation orb",
-                                            "Augumentation orb", "Mirror of Kalandra", "Eternal orb",
-                                            "Perandus coin", "Silver coin"};
-
         ImGui::PushItemWidth(100);
-        ImGui::Combo("Buy", &m_selected_currency_to_buy, currency_item_list, 27);
-        ImGui::Combo("Sell", &m_selected_currency_to_sell, currency_item_list, 27);
+
+        if(ImGui::BeginCombo("Buy", m_currency_items[m_selected_currency_to_buy].c_str()))
+        {
+            for(int n = 0; n < m_currency_items.size(); n++)
+            {
+                bool is_selected = (m_currency_items[m_selected_currency_to_buy] == m_currency_items[n]);
+                if(ImGui::Selectable(m_currency_items[n].c_str(), is_selected))
+                    m_selected_currency_to_buy = n;
+                if(is_selected)
+                    ImGui::SetItemDefaultFocus();
+            }
+            ImGui::EndCombo();
+        }
+
+        ImGui::SameLine();
+        ImGui::InputInt("Maximum results", &m_max_price_results);
+        if(m_max_price_results < 0)
+            m_max_price_results = 0;
+
+        if(ImGui::BeginCombo("Sell", m_currency_items[m_selected_currency_to_sell].c_str()))
+        {
+            for(int n = 0; n < m_currency_items.size(); n++)
+            {
+                bool is_selected = (m_currency_items[m_selected_currency_to_sell] == m_currency_items[n]);
+                if(ImGui::Selectable(m_currency_items[n].c_str(), is_selected))
+                    m_selected_currency_to_sell = n;
+                if(is_selected)
+                    ImGui::SetItemDefaultFocus();
+            }
+            ImGui::EndCombo();
+        }
+
+        ImGui::SameLine();
+        if(ImGui::BeginCombo("League", m_league_names[m_selected_league].c_str()))
+        {
+            for(int n = 0; n < m_league_names.size(); n++)
+            {
+                bool is_selected = (m_league_names[m_selected_league] == m_league_names[n]);
+                if(ImGui::Selectable(m_league_names[n].c_str(), is_selected))
+                    m_selected_league = n;
+                if(is_selected)
+                    ImGui::SetItemDefaultFocus();
+            }
+            ImGui::EndCombo();
+        }
 
         if(ImGui::Button("Get price"))
             SwitchButtonState(GET_PRICE_BUTTON, true);
+
+        ImGui::SameLine();
+        if(ImGui::Button("Options"))
+            m_show_options_window != m_show_options_window;
+
+        ImGui::SameLine();
+        if(ImGui::Button("Show ignore list"))
+            m_show_ignore_list_window != m_show_ignore_list_window;
 
         ImGui::SameLine();
         if(ImGui::Button("Close"))
@@ -108,13 +163,13 @@ void Gui::Process()
                                     GetCurrencyName(item_vector[0].s_item_type, true) +
                                     ";" +
                                     GetCurrencyName(item_vector[0].s_price_item_type, true) +
-                                    ")";
+                                    ")###" + std::to_string(i);
 
                 ImGui::SetNextWindowPos(ImVec2(0, 100 + 300 * i));
                 ImGui::SetNextWindowSize(ImVec2(400, 300));
                 ImGui::Begin(price_window_name.c_str(), 0, m_basic_window_flags);
 
-                for(int j = 0; j < item_vector.size(); j++)
+                for(int j = 0; j < item_vector.size() && j < m_max_price_results; j++)
                 {
                     std::string item_text_buf;
                     item_text_buf = item_text_buf +
@@ -138,6 +193,7 @@ void Gui::Process()
                                             " " + GetCurrencyName(item_vector[j].s_item_type, false) +
                                             " listed for " + std::to_string((int)item_vector[j].s_buy_price) +
                                             " " + GetCurrencyName(item_vector[j].s_price_item_type, false);
+
                         ImGui::SetClipboardText(buy_message_buf.c_str());
                     }
 
@@ -154,8 +210,9 @@ void Gui::Process()
                     ImGui::SameLine();
                     if(ImGui::Button("Add to ignore list"))
                     {
-
+                        m_account_ignore_list.push_back(item_vector[j].s_seller_acc_name);
                     }
+
                     ImGui::PopID();
                 }
 
@@ -168,13 +225,20 @@ void Gui::Process()
                 ImGui::End();
             }
         }
+        ImGui::PopStyleVar(1);
     }
 
     // Rendering
     ImGui::Render();
-    glViewport(0, 0, (int)m_io.DisplaySize.x, (int)m_io.DisplaySize.y);
+
+    int display_w, display_h;
+    glfwGetFramebufferSize(m_window_ptr, &display_w, &display_h);
+
+    glViewport(0, 0, display_w, display_h);
     glClearColor(m_clear_color.x, m_clear_color.y, m_clear_color.z, m_clear_color.w);
     glClear(GL_COLOR_BUFFER_BIT);
     ImGui_ImplOpenGL2_RenderDrawData(ImGui::GetDrawData());
-    SDL_GL_SwapWindow(m_window_ptr);
+
+    glfwMakeContextCurrent(m_window_ptr);
+    glfwSwapBuffers(m_window_ptr);
 }
